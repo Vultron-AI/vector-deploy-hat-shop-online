@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including devDependencies needed for build)
+RUN npm ci
 
 # Copy app source
 COPY . .
@@ -20,10 +20,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy built artifacts and production dependencies
+# Copy package files and install production-only dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy built artifacts from builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
 
 EXPOSE 3000
 
